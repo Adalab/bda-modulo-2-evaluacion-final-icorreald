@@ -84,7 +84,6 @@ GROUP BY rating
 ; 
 
 -- 13. Encuentra el nombre y apellido de los actores que aparecen en la película con title "Indian Love".
-#########################################################
 SELECT `first_name` AS nombre, `last_name` AS apellido
 FROM actor AS A
 INNER JOIN film_actor AS FA ON A.actor_id = FA.actor_id
@@ -103,3 +102,42 @@ SELECT A.`first_name`, A.`last_name`
 FROM actor AS A
 LEFT JOIN film_actor AS FA USING (actor_id)
 WHERE A.actor_id NOT IN (FA)
+;
+
+-- 16. Encuentra el título de todas las películas que fueron lanzadas entre el año 2005 y 2010.
+SELECT `title`
+FROM film
+WHERE release_year BETWEEN 2005 AND 2010
+;
+-- 17. Encuentra el título de todas las películas que son de la misma categoría que "Family".
+SELECT F.`title`
+FROM film AS F
+INNER JOIN film_category AS FC ON F.film_id = FC.film_id
+WHERE FC.category_id = 8
+;
+
+-- 18. Muestra el nombre y apellido de los actores que aparecen en más de 10 películas.
+SELECT A.`first_name`, A.`last_name`
+FROM actor AS A
+WHERE actor_id IN (SELECT actor_id
+					FROM film_actor
+					GROUP BY actor_id
+						HAVING COUNT(actor_id) > 10)
+;
+
+-- 19. Encuentra el título de todas las películas que son "R" y tienen una duración mayor a 2 horas en la tabla `film`.
+SELECT `title`
+FROM film
+WHERE `length` > 120 AND `rating` LIKE 'R'
+;
+
+-- 20. Encuentra las categorías de películas que tienen un promedio de duración superior a 120 minutos y muestra el nombre de la categoría junto con el promedio de duración.
+                            
+SELECT c.`name`, AVG(f.`length`) AS `duracion_media`
+FROM category AS C
+
+INNER JOIN film_category AS FC ON c.category_id = FC.category_id
+INNER JOIN film AS F ON FC.film_id = F.film_id
+
+GROUP BY c.category_id
+HAVING `duracion_media`> 120
