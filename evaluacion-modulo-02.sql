@@ -97,11 +97,10 @@ WHERE `description` LIKE '%_dog_%' OR '%_cat_%'
 ;
 
 -- 15. Hay algún actor o actriz que no apareca en ninguna película en la tabla `film_actor`.
-##############################################
 SELECT A.`first_name`, A.`last_name`
 FROM actor AS A
 LEFT JOIN film_actor AS FA USING (actor_id)
-WHERE A.actor_id NOT IN (FA)
+WHERE A.actor_id != FA.actor_id
 ;
 
 -- 16. Encuentra el título de todas las películas que fueron lanzadas entre el año 2005 y 2010.
@@ -171,3 +170,33 @@ WHERE actor_id IN (SELECT actor_id
 						WHERE film_id IN (SELECT film_id
 											FROM film_category
 											WHERE category_id = 11))
+;                                            
+
+## BONUS
+
+-- 24. BONUS: Encuentra el título de las películas que son comedias y tienen una duración mayor a 180 minutos en la tabla `film`.
+SELECT title
+FROM film
+WHERE film_id IN (SELECT film_id
+					FROM film_category
+					WHERE category_id = 5)
+	AND `length` > 180
+;
+-- 25. BONUS: Encuentra todos los actores que han actuado juntos en al menos una película. La consulta debe mostrar el nombre y apellido de los actores y el número de películas en las que han actuado juntos.
+WITH A1_A2 AS (SELECT FA1.film_id AS ID, 
+						FA1.actor_id AS A1, 
+                        FA2.actor_id AS A2
+					FROM film_actor AS FA1, film_actor AS FA2
+					WHERE FA1.actor_id != FA2.actor_id
+					ORDER BY FA1.film_id)
+
+SELECT Ac1.first_name AS nombre_1, Ac1.last_name AS apellido_1,
+		Ac2.first_name AS nombre_2, Ac2.last_name AS apellido_2,
+        COUNT(*)
+       
+FROM A1_A2
+
+INNER JOIN actor AS Ac1 	ON A1_A2.A1 = Ac1.actor_id
+INNER JOIN actor AS Ac2		ON A1_A2.A2 = Ac2.actor_id
+
+GROUP BY A1, A2
