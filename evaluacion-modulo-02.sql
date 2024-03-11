@@ -132,7 +132,6 @@ WHERE `length` > 120 AND `rating` LIKE 'R'
 ;
 
 -- 20. Encuentra las categorías de películas que tienen un promedio de duración superior a 120 minutos y muestra el nombre de la categoría junto con el promedio de duración.
-                            
 SELECT c.`name`, AVG(f.`length`) AS `duracion_media`
 FROM category AS C
 
@@ -141,3 +140,34 @@ INNER JOIN film AS F ON FC.film_id = F.film_id
 
 GROUP BY c.category_id
 HAVING `duracion_media`> 120
+;
+
+-- 21. Encuentra los actores que han actuado en al menos 5 películas y muestra el nombre del actor junto con la cantidad de películas en las que han actuado.
+SELECT A.first_name AS nombre, A.last_name AS apellido, COUNT(FA.actor_id) AS numero_peliculas
+FROM actor AS A
+INNER JOIN film_actor AS FA ON A.actor_id = FA.actor_id
+GROUP BY FA.actor_id
+	HAVING numero_peliculas > 4
+    ;
+    
+-- 22. Encuentra el título de todas las películas que fueron alquiladas por más de 5 días. Utiliza una subconsulta para encontrar los rental_ids con una duración superior a 5 días y luego selecciona las películas correspondientes.
+		/* NOTA: el "todas" me confunde un poco. Si se quiere tener la lista con los nombres de las películas repetidos, sólo habría que
+        eliminar el DISTINCT del select*/
+        
+SELECT DISTINCT F.title
+FROM film AS F 
+INNER JOIN inventory AS I ON F.film_id = I.film_id
+INNER JOIN rental AS R ON I.inventory_id = R.inventory_id
+WHERE R.rental_id IN (SELECT rental_id 
+						FROM rental
+						WHERE DATEDIFF(return_date, rental_date) > 5)
+;
+
+-- 23. Encuentra el nombre y apellido de los actores que no han actuado en ninguna película de la categoría "Horror". Utiliza una subconsulta para encontrar los actores que han actuado en películas de la categoría "Horror" y luego exclúyelos de la lista de actores.
+SELECT first_name AS nombre, last_name AS apellido
+FROM actor
+WHERE actor_id IN (SELECT actor_id 
+						FROM film_actor
+						WHERE film_id IN (SELECT film_id
+											FROM film_category
+											WHERE category_id = 11))
