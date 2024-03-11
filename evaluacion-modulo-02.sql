@@ -52,9 +52,7 @@ FROM film
 GROUP BY `rating`
 ;
 
--- 10. Encuentra la cantidad total de películas alquiladas por cada cliente
-	-- muestra el ID del cliente, su nombre y apellido junto con 
-    -- la cantidad de películas alquiladas.
+-- 10. Encuentra la cantidad total de películas alquiladas por cada cliente, muestra el ID del cliente, su nombre y apellido junto con la cantidad de películas alquiladas.
 
 SELECT C.customer_id AS ID, C.first_name AS nombre, C.last_name AS apellido, COUNT(R.customer_id) AS numero_alquileres
 FROM customer AS C
@@ -63,3 +61,45 @@ ON C.customer_id = R.customer_id
 GROUP BY R.customer_id
 ORDER BY C.customer_id
 ;
+
+-- 11. Encuentra la cantidad total de películas alquiladas por categoría y muestra el nombre de la categoría junto con el recuento de alquileres.
+		/* Necesitamos categoría y cantidad de películas alquiladas en respectiva categoría.
+			Tomamos name de category
+            De rental sacamos cuántas veces se ha alquilado una película según su ID de inventario
+            Con este ID de inventario, podemos trazar hasta film_category las películas y su respectivo category_id
+            Si agrupamos por dicho category_id, obtenemos cuántas películas de esa categoría se han alquilado
+            Nótese que hay películas que están repetidas; es decir, registradas varias veces en el inventario. Las contamos porque sigue siendo
+				una película alquilada de esa categoría*/
+SELECT C.`name` AS categoria, COUNT(R.`inventory_id`) AS numero_alquileres
+FROM rental AS R
+INNER JOIN inventory AS I ON R.inventory_id = I.inventory_id
+INNER JOIN film_category AS FC ON I.film_id = FC.film_id
+INNER JOIN category AS C ON FC.category_id = C.category_id
+GROUP BY C.category_id
+;
+-- 12. Encuentra el promedio de duración de las películas para cada clasificación de la tabla `film` y muestra la clasificación junto con el promedio de duración.
+SELECT rating, AVG(length)
+FROM film
+GROUP BY rating
+; 
+
+-- 13. Encuentra el nombre y apellido de los actores que aparecen en la película con title "Indian Love".
+#########################################################
+SELECT `first_name` AS nombre, `last_name` AS apellido
+FROM actor AS A
+INNER JOIN film_actor AS FA ON A.actor_id = FA.actor_id
+INNER JOIN film AS F ON FA.film_id = F.film_id
+WHERE F.film_id = 458
+;
+-- 14. Muestra el título de todas las películas que contengan la palabra "dog" o "cat" en su descripción.
+SELECT `title`
+FROM film
+WHERE `description` LIKE '%_dog_%' OR '%_cat_%' 
+;
+
+-- 15. Hay algún actor o actriz que no apareca en ninguna película en la tabla `film_actor`.
+##############################################
+SELECT A.`first_name`, A.`last_name`
+FROM actor AS A
+LEFT JOIN film_actor AS FA USING (actor_id)
+WHERE A.actor_id NOT IN (FA)
