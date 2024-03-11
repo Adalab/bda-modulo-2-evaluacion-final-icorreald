@@ -1,6 +1,6 @@
-##########################
--- EVALUACIÓN MODULO 02 --
-##########################
+														##########################
+														-- EVALUACIÓN MODULO 02 --
+														##########################
 
 -- 1. Selecciona todos los nombres de las películas sin que aparezcan duplicados.
 SELECT DISTINCT title
@@ -70,7 +70,8 @@ ORDER BY C.customer_id
             Si agrupamos por dicho category_id, obtenemos cuántas películas de esa categoría se han alquilado
             Nótese que hay películas que están repetidas; es decir, registradas varias veces en el inventario. Las contamos porque sigue siendo
 				una película alquilada de esa categoría*/
-SELECT C.`name` AS categoria, COUNT(R.`inventory_id`) AS numero_alquileres
+SELECT C.`name` AS categoria, 
+		COUNT(R.`inventory_id`) AS numero_alquileres
 FROM rental AS R
 INNER JOIN inventory AS I ON R.inventory_id = I.inventory_id
 INNER JOIN film_category AS FC ON I.film_id = FC.film_id
@@ -151,7 +152,7 @@ GROUP BY FA.actor_id
     
 -- 22. Encuentra el título de todas las películas que fueron alquiladas por más de 5 días. Utiliza una subconsulta para encontrar los rental_ids con una duración superior a 5 días y luego selecciona las películas correspondientes.
 		/* NOTA: el "todas" me confunde un poco. Si se quiere tener la lista con los nombres de las películas repetidos, sólo habría que
-        eliminar el DISTINCT del select*/
+        eliminar el DISTINCT del SELECT*/
         
 SELECT DISTINCT F.title
 FROM film AS F 
@@ -165,7 +166,7 @@ WHERE R.rental_id IN (SELECT rental_id
 -- 23. Encuentra el nombre y apellido de los actores que no han actuado en ninguna película de la categoría "Horror". Utiliza una subconsulta para encontrar los actores que han actuado en películas de la categoría "Horror" y luego exclúyelos de la lista de actores.
 SELECT first_name AS nombre, last_name AS apellido
 FROM actor
-WHERE actor_id IN (SELECT actor_id 
+WHERE actor_id NOT IN (SELECT actor_id 
 						FROM film_actor
 						WHERE film_id IN (SELECT film_id
 											FROM film_category
@@ -183,20 +184,21 @@ WHERE film_id IN (SELECT film_id
 	AND `length` > 180
 ;
 -- 25. BONUS: Encuentra todos los actores que han actuado juntos en al menos una película. La consulta debe mostrar el nombre y apellido de los actores y el número de películas en las que han actuado juntos.
-WITH A1_A2 AS (SELECT FA1.film_id AS ID, 
-						FA1.actor_id AS A1, 
-                        FA2.actor_id AS A2
-					FROM film_actor AS FA1, film_actor AS FA2
-					WHERE FA1.actor_id != FA2.actor_id
-					ORDER BY FA1.film_id)
 
-SELECT Ac1.first_name AS nombre_1, Ac1.last_name AS apellido_1,
-		Ac2.first_name AS nombre_2, Ac2.last_name AS apellido_2,
-        COUNT(*)
-       
-FROM A1_A2
-
-INNER JOIN actor AS Ac1 	ON A1_A2.A1 = Ac1.actor_id
-INNER JOIN actor AS Ac2		ON A1_A2.A2 = Ac2.actor_id
-
-GROUP BY A1, A2
+-- PASO 1
+SELECT FA1.actor_id,
+		FA2.actor_id,
+        CONCAT(FA1.actor_id, '-', FA2.actor_id)
+        
+	FROM film_actor AS FA1
+JOIN film_actor AS FA2
+WHERE FA1.actor_id != FA2.actor_id
+;
+-- PASO 2
+SELECT CONCAT(FA1.actor_id, '-', FA2.actor_id),
+        COUNT(CONCAT(FA1.actor_id, '-', FA2.actor_id))
+	FROM film_actor AS FA1
+JOIN film_actor AS FA2
+WHERE FA1.actor_id != FA2.actor_id
+GROUP BY CONCAT(FA1.actor_id, '-', FA2.actor_id)
+;
